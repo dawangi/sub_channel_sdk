@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <!--属性配置-->
+    <Properties>
+        <!--日志打印格式-->
+        <Property name="PATTERN">%date{HH:mm:ss.SSS} [%thread] %X{TraceId} %-5level %logger{36} - %msg%n</Property>
+        <!--日志等级-->
+        <Property name="LEVEL">INFO</Property>
+    </Properties>
+    <!--日志追加器配置-->
+    <Appenders>
+        <!--可滚动归档文件的日志追加器，这里配置的是Error级别的日志可以打印到error.log文件中
+        同时根据日期（天）和大小（最大250MB)进行文件归档-->
+        <RollingFile name="ErrorFile" fileName="error.log"
+                     filePattern="$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+            <!--日志文件打印格式-->
+            <PatternLayout>
+                <Pattern>${PATTERN}</Pattern>
+            </PatternLayout>
+            <!--日志文件归档策略-->
+            <Policies>
+                <!--根据日期格式按时间归档-->
+                <TimeBasedTriggeringPolicy/>
+                <!--根据文件大小归档超过250MB就归档-->
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+        </RollingFile>
+        <!--日志logger文件可以接收所有级别的日志打印-->
+        <RollingFile name="LoggerFile" fileName="logger.log"
+                     filePattern="$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+            <!--日志布局 -->
+            <PatternLayout>
+                <Pattern>${PATTERN}</Pattern>
+            </PatternLayout>
+            <!--归档策略-->
+            <Policies>
+                <!--根据日期格式按时间归档-->
+                <TimeBasedTriggeringPolicy/>
+                <!--根据文件大小归档超过250MB就归档-->
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+        </RollingFile>
+        <!--打印日志到控制台的日志追加器-->
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <!--日志布局格式-->
+            <PatternLayout pattern="${PATTERN}"/>
+        </Console>
+    </Appenders>
+    <!--日志记录器配置-->
+    <Loggers>
+        <!-- 记录器的日志名字，这个日志记录器的名字与我们每个类里面获取的Logger对象对应，
+        对应的关系就是通过这个name来匹配的，匹配规则一般是满足Logger配置的name前缀，
+        每个logger元素的日志上下文中都存在一个LoggerConfig配置对象来管理配置-->
+        <Logger name="link.elastic" additivity="false">
+            <!-- LoggerConfig 也可以配置一个或多个 AppenderRef 元素，
+            在处理日志记录事件时将调用它们中的每一个-->
+            <!--logger.log文件日志追加器-->
+            <AppenderRef ref="LoggerFile"/>
+            <!--error级别的error.log追加器-->
+            <AppenderRef ref="ErrorFile"/>
+        </Logger>
+        <!--  每个配置都必须有一个根记录器。前面的Logger日志配置器未匹配到则走默认的根记录器
+        如果未配置默认根 LoggerConfig，其级别为 ERROR 并附加了控制台附加程序，将被使用。
+        根记录器和其他记录器之间的主要区别是:
+        1.根记录器没有名称属性。
+        2.根记录器不支持可加性属性，因为它没有父记录器-->
+        <Root level="${LEVEL}">
+            <!--控制台追加器-->
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+    </Loggers>
+</Configuration>
